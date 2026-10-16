@@ -10,9 +10,10 @@ Dokumen ini mencatat seluruh transformasi arsitektur, pembaruan skema database, 
    * Standarisasi seluruh *Foreign Key* ke konvensi standar Laravel Eloquent (`nama_relasi_id`).
    * Penghapusan kolom penanggalan legacy ganda (`tanggal` & `waktu` varchar) digantikan oleh native timestamps (`created_at` & `updated_at`).
    * Penerapan relasi *Foreign Key Constraint* dengan *referential integrity* (Cascade Delete / Restrict).
-2. **Interactive Web Installation Wizard (5-Step Installer)**
-   * Sistem baru untuk mempermudah pemasangan aplikasi pertama kali tanpa perlu CLI.
-   * Auto-detection status instalasi: jika tabel `sekolah`, `pengaturan`, atau `users` kosong, aplikasi otomatis dialihkan ke antarmuka `/install`.
+2. **Pencatatan Versi Dinamis & Manajemen Lisensi**
+   * Pencatatan versi aplikasi otomatis disinkronkan ke tabel `pengaturan->versi` saat proses pembaruan dijalankan (`UpdateController`).
+   * Validasi tipe lisensi (`lifetime` vs `subscription`), validasi kedaluwarsa (`expires_at`), serta proteksi kode menggunakan **ionCube PHP Loader** (PHP 8.3).
+   * Standarisasi 13 master roles terintegrasi.
 3. **Pembaruan Konsep "Poin Kedisiplinan Siswa"**
    * Transformasi sistem pelanggaran lama: sebelumnya hanya berfokus pada hukuman/pelanggaran. Sekarang mengadopsi sistem poin kedisiplinan yang seimbang: perilaku baik bernilai poin positif (**+**), sedangkan pelanggaran bernilai poin negatif (**-**).
 4. **Pembaruan Modul Asesmen & CBT**
@@ -228,14 +229,27 @@ Berikut adalah rincian transformasi tabel dan kolom antara versi lama dan versi 
 
 ## 🚀 Fitur Baru & Peningkatan Arsitektur
 
-### 1. Web Interactive Installation Wizard
-* **Fitur**: Antarmuka instalasi berbasis web 5 langkah di `/install`.
-* **Deteksi Otomatis**: Middleware `CheckInstallationStatus` memeriksa keterisian tabel kunci (`sekolah`, `pengaturan`, `users`).
-* **Layanan Migrasi Otomatis**: Menjalankan batch 108 migrasi tabel & seeder awal secara aman via web tanpa batas waktu eksekusi (*no timeout*).
-* **Data Awal Otomatis (Initial Seeding)**:
-  * Saldo bawaan sistem: `SPP`, `Tagihan`, `Koperasi`, `Akademik` (dengan flag `sistem = 1`).
-  * Angkatan bawaan: `2022`, `2023`, `2024`, `2025`, `2026`.
-  * 14 Master Role terintegrasi.
+### 1. Pelacakan Versi Dinamis & Peningkatan Sistem Lisensi
+* **Pencatatan Versi Otomatis**: Melalui pembaruan di `UpdateController`, nomor versi sistem dari paket rilis secara otomatis disimpan dan disinkronkan ke tabel `pengaturan` (kolom `versi`). Halaman Tentang Aplikasi dan footer dashboard selalu merefleksikan versi riil terkini.
+* **Manajemen Lisensi Fleksibel (`LicenseService`)**: Mendukung tipe lisensi `lifetime` (tanpa batas waktu) dan `subscription` (dengan validasi tanggal kedaluwarsa `expires_at`).
+* **Proteksi Kode ionCube Loader**: Mendukung enkripsi berkas PHP menggunakan ionCube PHP Loader v13+ / v14+ pada environment PHP 8.3.
+* **Master Roles Terstandarisasi (13 Roles)**: Mendukung 13 role baku:
+  1. `super_admin`
+  2. `admin`
+  3. `kepala_sekolah`
+  4. `guru`
+  5. `siswa`
+  6. `wali_murid`
+  7. `koperasi`
+  8. `kantin`
+  9. `bendahara`
+  10. `sarpras`
+  11. `perpustakaan`
+  12. `bk`
+  13. `petugas_absen`
+* **Data Awal Master (Initial Data)**:
+  * Saldo bawaan: `SPP`, `Tagihan`, `Koperasi`, `Akademik` (`sistem = 1`).
+  * Angkatan default: `2022`, `2023`, `2024`, `2025`, `2026`.
 
 ### 2. Kestabilan Sistem & Standar PSR-4 (Kompatibilitas Linux / cPanel)
 * Menyelaraskan seluruh nama class Model dan file fisik (misal: `Jenjang` dan `PelanggaranSiswa`) agar memenuhi standar PSR-4 Composer. Mencegah fatal error *Class Not Found* pada hosting Linux yang bersifat *case-sensitive*.

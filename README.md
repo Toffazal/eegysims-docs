@@ -1,7 +1,7 @@
 # Eegyo SIMS - Enterprise School Information Management System
 
 <p align="center">
-  <img src="logo_esims_white.png" alt="Eegyo SIMS Logo" width="250">
+  <img src="public/assets/image/logo_esims_white.png" alt="Eegyo SIMS Logo" width="250">
 </p>
 
 <p align="center">
@@ -81,26 +81,25 @@ Dibangun di atas **Laravel 13.x** dan arsitektur database relasional ternormalis
 
 ---
 
-## 👥 14 Multi-Role & Portal Terisolasi
+## 👥 13 Multi-Role & Portal Terisolasi
 
 Eegyo SIMS dirancang dengan pemisahan hak akses ketat (_Role-Based Access Control_):
 
-| Role                | Deskripsi Portal                                                                   |
-| :------------------ | :--------------------------------------------------------------------------------- |
-| **Admin**           | Pengaturan sistem, lisensi, backup database, manajemen pengguna & sekolah.         |
-| **Kepala Sekolah**  | Dashboard eksekutif, monitoring statistik akademik, approval berkas & anggaran.    |
-| **Tata Usaha (TU)** | Manajemen data induk siswa & pegawai, administrasi persuratan, mutasi & arsip.     |
-| **Bendahara**       | Manajemen pos saldo kas, penetapan tagihan/SPP, persetujuan withdraw kantin.       |
-| **Guru**            | Pengelolaan kelas, input materi, jadwal ujian/CBT, tugas, dan rekap nilai siswa.   |
-| **Wali Kelas**      | Pemantauan kelas binaan, presensi kolektif, poin kedisiplinan, dan cetak rapor.    |
-| **Guru Piket**      | Presensi harian gerbang, pemantauan roster, dan pencatatan pelanggaran/kebaikan.   |
-| **Guru BK**         | Pengelolaan pengaduan, konseling siswa, dan penanganan tindakan kedisiplinan.      |
-| **Panitia PPDB**    | Verifikasi pendaftar baru, seleksi nilai/jalur, dan pengelolaan kuota masuk.       |
-| **Koperasi**        | Pengelolaan katalog barang, inventaris seragam/buku, dan transaksi penjualan.      |
-| **Kantin**          | POS kasir penjualan makanan/minuman, riwayat belanja, dan permohonan tarik saldo.  |
-| **Siswa**           | Portal belajar, jadwal, nilai, CBT ujian online, saldo digital, dan kartu pelajar. |
-| **Pendaftar**       | Portal calon siswa baru untuk pengisian formulir PPDB dan upload berkas.           |
-| **Wali Murid**      | Pemantauan absensi, tagihan SPP, dan perkembangan akademik anak dari rumah.        |
+| No  | Role                | Slug        | Deskripsi Portal                                                                   |
+| :-- | :------------------ | :---------- | :--------------------------------------------------------------------------------- |
+| 1   | **Admin**           | `admin`     | Pengaturan sistem, lisensi, konfigurasi aplikasi, manajemen pengguna & sekolah.    |
+| 2   | **Kepala Sekolah**  | `kepsek`    | Dashboard eksekutif, monitoring statistik akademik, approval berkas & anggaran.    |
+| 3   | **Tata Usaha (TU)** | `tataUsaha` | Manajemen data induk siswa & pegawai, administrasi persuratan, mutasi & arsip.     |
+| 4   | **Bendahara**       | `bendahara` | Manajemen pos saldo kas, penetapan tagihan/SPP, persetujuan withdraw kantin.       |
+| 5   | **Guru**            | `guru`      | Pengelolaan kelas, input materi, jadwal ujian/CBT, tugas, dan rekap nilai siswa.   |
+| 6   | **Wali Kelas**      | `waliKelas` | Pemantauan kelas binaan, presensi kolektif, poin kedisiplinan, dan cetak rapor.    |
+| 7   | **Guru Piket**      | `piket`     | Presensi harian gerbang, pemantauan roster, dan pencatatan pelanggaran/kebaikan.   |
+| 8   | **Guru BK**         | `bk`        | Pengelolaan pengaduan, konseling siswa, dan penanganan tindakan kedisiplinan.      |
+| 9   | **Panitia PPDB**    | `panitia`   | Verifikasi pendaftar baru, seleksi nilai/jalur, dan pengelolaan kuota masuk.       |
+| 10  | **Koperasi**        | `koperasi`  | Pengelolaan katalog barang, inventaris seragam/buku, dan transaksi penjualan.      |
+| 11  | **Kantin**          | `kantin`    | POS kasir penjualan makanan/minuman, riwayat belanja, dan permohonan tarik saldo.  |
+| 12  | **Siswa**           | `siswa`     | Portal belajar, jadwal, nilai, CBT ujian online, saldo digital, dan kartu pelajar. |
+| 13  | **Pendaftar**       | `pendaftar` | Portal calon siswa baru untuk pengisian formulir PPDB dan upload berkas.           |
 
 ---
 
@@ -108,27 +107,31 @@ Eegyo SIMS dirancang dengan pemisahan hak akses ketat (_Role-Based Access Contro
 
 - **PHP**: Versi **8.3+** (Sesuai spesifikasi `composer.json` : `^8.3`)
 - **Ekstensi PHP Wajib**:
+    - `ioncube_loader` (v13+ / v14+ untuk PHP 8.3 — Wajib untuk sistem proteksi & lisensi)
     - `BCMath`
     - `Ctype`
     - `cURL`
     - `DOM / XML`
     - `Fileinfo`
     - `Filter`
-    - `GD` (untuk pengolahan gambar, foto profil, dan barcode/QR)
+    - `GD` atau `Imagick` (untuk pengolahan gambar, foto profil, dan barcode/QR)
+    - `Intl`
     - `Mbstring`
     - `OpenSSL`
     - `PCRE`
     - `PDO` & `pdo_mysql`
     - `Tokenizer`
+    - `Zip`
+    - `PCNTL` (Wajib di VPS untuk background worker Supervisor / Reverb)
 - **Database**: MySQL 8.0+ atau MariaDB 10.4+
-- **Web Server**: Apache (dengan `mod_rewrite` aktif) atau Nginx
+- **Web Server**: Nginx (Sangat direkomendasikan) atau Apache (dengan `mod_rewrite` aktif)
 - **Composer**: Versi 2.x
 
 ---
 
 ## 🚀 Panduan Instalasi Cepat
 
-Eegyo SIMS dilengkapi dengan **Web Interactive Installation Wizard**, sehingga Anda tidak perlu mengetikkan puluhan perintah terminal saat pertama kali memasang aplikasi.
+Panduan langkah demi langkah untuk menginstalasi Eegyo SIMS:
 
 ### Langkah 1: Unduh / Clone Repositori
 
@@ -149,9 +152,14 @@ Salin berkas `.env.example` menjadi `.env`:
 cp .env.example .env
 ```
 
-Buat sebuah database kosong di MySQL/phpMyAdmin (misalnya: `eegyosims_db`). Buka berkas `.env` lalu sesuaikan konfigurasi koneksi database:
+Buat database baru di MySQL/phpMyAdmin (misalnya: `eegyosims_db`). Buka berkas `.env` lalu sesuaikan konfigurasi koneksi database:
 
 ```env
+APP_NAME="Eegyo SIMS"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=http://localhost/eegyosims
+
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -160,49 +168,54 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### Langkah 3: Jalankan Web Installation Wizard
+### Langkah 3: Inisialisasi Aplikasi (Artisan)
 
-1. Buka browser dan arahkan ke alamat URL aplikasi Anda (misal: `http://localhost/eegyosims` atau virtual host Anda).
-2. Sistem akan **secara otomatis mendeteksi status belum terinstall** dan mengarahkan Anda ke antarmuka wizard: `http://localhost/eegyosims/install`.
-3. Ikuti 5 langkah mudah di layar:
-    - **Langkah 1 (Sistem & Lingkungan)**: Validasi ekstensi PHP, koneksi database, dan pembuatan symlink storage.
-    - **Langkah 2 (Profil Sekolah)**: Input nama sekolah, NPSN, jenjang, alamat, dan kontak resmi.
-    - **Langkah 3 (Pengaturan Aplikasi)**: Pilih tema visual default, nominal uang sekolah, dan format penomoran dokumen.
-    - **Langkah 4 (Akun Super Administrator)**: Buat username, email, dan password untuk Administrator utama pertama.
-    - **Langkah 5 (Eksekusi Otomatis)**: Sistem menjalankan 108 migrasi database dan pengisian seeder sistem secara background.
-4. Klik tombol **"Masuk ke Aplikasi"** dan login menggunakan akun Admin yang baru saja Anda buat!
+Jalankan perintah berikut di terminal:
+
+```bash
+# 1. Generate Application Encryption Key
+php artisan key:generate
+
+# 2. Jalankan migrasi tabel database dan data seeder awal
+php artisan migrate --force
+php artisan db:seed --force
+
+# 3. Buat symlink storage publik untuk berkas upload
+php artisan storage:link
+```
+
+### Langkah 4: Login ke Sistem
+
+Buka browser dan akses alamat aplikasi Anda (`APP_URL`). Login menggunakan akun default Administrator.
+
+> [!TIP]
+> **Panduan Deployment Server Produksi & ionCube Loader:**
+> Untuk panduan konfigurasi Nginx reverse proxy, OpenLiteSpeed, Shared Hosting cPanel, Supervisor background worker, Laravel Reverb WebSocket, Cloudflare R2, Firebase Cloud Messaging, dan **panduan instalasi ionCube PHP Loader**, silakan baca panduan lengkap di:
+> 👉 [**INSTALLATION.md**](INSTALLATION.md)
 
 ---
 
-## 🛠️ Instalasi Alternatif via CLI (Developer Mode)
+## 🛠️ Menjalankan Service di Localhost (Development)
 
-Bagi pengembang yang ingin melakukan instalasi penuh melalui terminal:
+Untuk menjalankan server pengembangan lokal beserta websocket:
 
 ```bash
-# 1. Install dependensi
-composer install
-
-# 2. Generate Application Key
-php artisan key:generate
-
-# 3. Jalankan migrasi dan seeder awal
-php artisan migrate --force
-php artisan db:seed --class=InitialSystemSeeder --force
-
-# 4. Buat symlink storage publik
-php artisan storage:link
-
-# 5. Jalankan server lokal & websocket (opsional)
+# Terminal 1: Web Server Lokal
 php artisan serve
+
+# Terminal 2: WebSocket Server (Laravel Reverb)
 php artisan reverb:start
 ```
 
 ---
 
-## 🔄 Riwayat Perubahan & Pembaruan
+## 🔄 Dokumentasi Teknis & Panduan Terkait
 
-Untuk melihat daftar lengkap transformasi dari versi legacy ke versi modern saat ini (termasuk normalisasi 108 tabel, perubahan skema kolom, dan fitur baru), silakan pelajari dokumen:
-👉 [**UPDATE.md (Changelog & Migration History)**](UPDATE.md)
+- 🛠️ [**TECH_STACK.md (Spesifikasi Arsitektur & Teknologi Lengkap)**](TECH_STACK.md)
+- 📘 [**INSTALLATION.md (Panduan Lengkap Deployment & Konfigurasi Server)**](INSTALLATION.md)
+- 📡 [**IOT_ABSENSI.md (Panduan Integrasi Perangkat Keras IoT RFID)**](IOT_ABSENSI.md)
+- 🚀 [**MIGRATION.md (Panduan Migrasi dari Sistem Lama ke Sistem Baru)**](MIGRATION.md)
+- 📝 [**UPDATE.md (Changelog & Transformasi Database)**](UPDATE.md)
 
 ---
 

@@ -5,17 +5,19 @@ Dokumen ini memuat panduan lengkap mengenai cara melakukan instalasi, konfiguras
 ---
 
 ## 📑 Daftar Isi
-1. [Persyaratan Sistem (System Requirements)](#1-persyaratan-sistem-system-requirements)
+1. [Persyaratan Sistem & Panduan ionCube Loader](#1-persyaratan-sistem--panduan-ioncube-loader)
+   - [A. Persyaratan Software & Ekstensi](#a-persyaratan-software--ekstensi)
+   - [B. Panduan Lengkap Instalasi ionCube PHP Loader](#b-panduan-lengkap-instalasi-ioncube-php-loader)
 2. [Deployment di VPS (Ubuntu / Debian + Nginx) - Rekomendasi](#2-deployment-di-vps-ubuntu--debian--nginx---rekomendasi)
    - [A. Upload & Persiapan Direktori](#a-upload--persiapan-direktori)
    - [B. Konfigurasi Web Server (Nginx Virtual Host)](#b-konfigurasi-web-server-nginx-virtual-host)
    - [B.2. Konfigurasi OpenLiteSpeed (OLS / CyberPanel / aaPanel)](#b2-jika-menggunakan-openlitespeed-ols--cyberpanel--aapanel)
-   - [C. Menjalankan Wizard Instalasi](#c-menjalankan-wizard-instalasi)
+   - [C. Migrasi Database & Seeder Awal](#c-migrasi-database--seeder-awal)
    - [D. Konfigurasi Background Worker (Supervisor)](#d-konfigurasi-background-worker-supervisor)
    - [E. Konfigurasi Cron Job (Scheduler)](#e-konfigurasi-cron-job-scheduler)
 3. [Deployment di Shared Hosting (cPanel / DirectAdmin)](#3-deployment-di-shared-hosting-cpanel--directadmin)
    - [A. Pengaturan Struktur File yang Aman](#a-pengaturan-struktur-file-yang-aman)
-   - [B. Setup Database & Wizard](#b-setup-database--wizard)
+   - [B. Setup Database & Konfigurasi .env di cPanel](#b-setup-database--konfigurasi-env-di-cpanel)
    - [C. Pembuatan Symlink Storage](#c-pembuatan-symlink-storage)
    - [D. Cron Job di cPanel](#d-cron-job-di-cpanel)
    - [E. Catatan Khusus Reverb di Shared Hosting](#e-catatan-khusus-reverb-di-shared-hosting)
@@ -31,16 +33,19 @@ Dokumen ini memuat panduan lengkap mengenai cara melakukan instalasi, konfiguras
 
 ---
 
-## 1. Persyaratan Sistem (System Requirements)
+## 1. Persyaratan Sistem & Panduan ionCube Loader
 
-* **PHP:** Versi `>= 8.3` (Sesuai `composer.json`)
+### A. Persyaratan Software & Ekstensi
+
+* **PHP:** Versi `>= 8.3` (Sesuai spesifikasi `composer.json`)
 * **Ekstensi PHP Wajib:**
+  * `ioncube_loader` (Wajib untuk verifikasi lisensi & eksekusi kode terproteksi)
   * `php-bcmath`
   * `php-ctype`
   * `php-curl`
   * `php-dom` / `php-xml`
   * `php-fileinfo`
-  * `php-gd` atau `php-imagick` (untuk resize gambar & banner)
+  * `php-gd` atau `php-imagick` (untuk resize gambar, avatar, & barcode)
   * `php-intl`
   * `php-json`
   * `php-mbstring`
@@ -52,6 +57,74 @@ Dokumen ini memuat panduan lengkap mengenai cara melakukan instalasi, konfiguras
 * **Database:** MySQL `>= 8.0` atau MariaDB `>= 10.4`
 * **Web Server:** Nginx (Sangat direkomendasikan untuk Reverse Proxy WebSocket) atau Apache
 * **Opsional (Direkomendasikan untuk traffic tinggi):** Redis Server
+
+---
+
+### B. Panduan Lengkap Instalasi ionCube PHP Loader
+
+Aplikasi Eegyo SIMS menggunakan proteksi kode dan sistem validasi lisensi yang memerlukan **ionCube PHP Loader** terpasang pada server web Anda.
+
+#### 1. Instalasi di VPS (Ubuntu / Debian + Nginx / Apache)
+
+##### Langkah 1: Unduh Loader Resmi ionCube
+Akses server VPS via SSH, lalu unduh dan ekstrak paket ionCube Loader sesuai arsitektur Linux 64-bit:
+```bash
+cd /tmp
+wget https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+tar -zxvf ioncube_loaders_lin_x86-64.tar.gz
+```
+
+##### Langkah 2: Salin File Loader ke Direktori Ekstensi PHP
+Cek lokasi folder ekstensi PHP di server Anda dengan perintah:
+```bash
+php -i | grep extension_dir
+```
+*(Contoh output: `/usr/lib/php/20230831`)*
+
+Salin file loader untuk PHP 8.3 ke folder ekstensi tersebut:
+```bash
+sudo cp /tmp/ioncube/ioncube_loader_lin_8.3.so /usr/lib/php/20230831/
+```
+
+##### Langkah 3: Daftarkan Loader di Konfigurasi PHP (FPM & CLI)
+Buat file konfigurasi prioritas `00-ioncube.ini` agar dimuat paling pertama oleh PHP:
+```bash
+# Untuk PHP-FPM (Nginx / Apache FastCGI)
+echo "zend_extension=/usr/lib/php/20230831/ioncube_loader_lin_8.3.so" | sudo tee /etc/php/8.3/fpm/conf.d/00-ioncube.ini
+
+# Untuk PHP CLI (Terminal / Artisan / Queue Worker)
+echo "zend_extension=/usr/lib/php/20230831/ioncube_loader_lin_8.3.so" | sudo tee /etc/php/8.3/cli/conf.d/00-ioncube.ini
+```
+
+##### Langkah 4: Restart Service Web Server & PHP-FPM
+```bash
+sudo systemctl restart php8.3-fpm
+sudo systemctl reload nginx   # atau: sudo systemctl reload apache2
+```
+
+##### Langkah 5: Verifikasi Instalasi
+Jalankan perintah berikut di terminal:
+```bash
+php -v
+```
+Jika berhasil, output akan menampilkan baris seperti berikut:
+```text
+PHP 8.3.x (cli) ...
+with the ionCube PHP Loader v13.x.x (or higher), Copyright (c) 2002-..., by ionCube Ltd.
+```
+
+---
+
+#### 2. Aktivasi di Shared Hosting (cPanel / DirectAdmin)
+
+Di shared hosting, Anda umumnya **tidak perlu** mengunduh file secara manual karena ionCube Loader sudah disediakan oleh hosting provider:
+
+1. Login ke panel **cPanel**.
+2. Masuk ke menu **Software** > **Select PHP Version** (atau **MultiPHP Manager**).
+3. Pastikan versi PHP yang aktif adalah **8.3**.
+4. Klik tab **Extensions**.
+5. Cari modul bernama **`ioncube_loader`**, lalu beri tanda centang (**✓**).
+6. Pengaturan akan tersimpan secara instan. Refresh halaman website Anda.
 
 ---
 
@@ -180,19 +253,39 @@ docRoot                   $VH_ROOT/public
 
 ---
 
-### C. Menjalankan Wizard Instalasi
+### C. Migrasi Database & Seeder Awal
 
-Buka browser dan akses domain Anda:
-```text
-https://sims.sekolah.sch.id
-```
-Aplikasi secara otomatis mendeteksi status instalasi dan mengarahkan Anda ke **Wizard Instalasi**:
-1. **Step 1 - Sistem**: Konfigurasi koneksi Database MySQL dan APP_URL.
-2. **Step 2 - Profil Sekolah**: Nama sekolah, jenjang, NPSN, logo, dan alamat.
-3. **Step 3 - Pengaturan Aplikasi**: Nama branding aplikasi dan kontak.
-4. **Step 4 - Akun Administrator**: Pembuatan akun Super Admin pertama.
+1. Buat database baru di MySQL:
+   ```bash
+   mysql -u root -p -e "CREATE DATABASE eegyosims_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+   ```
+2. Sesuaikan konfigurasi koneksi database pada berkas `.env`:
+   ```env
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_URL=https://sims.sekolah.sch.id
 
-Setelah selesai, database otomatis dimigrasi beserta seeder master (saldo sistem, angkatan default, roles & permissions).
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=eegyosims_db
+   DB_USERNAME=db_user
+   DB_PASSWORD=db_password_anda
+   ```
+3. Generate application encryption key (jika belum dibuat):
+   ```bash
+   php artisan key:generate
+   ```
+4. Jalankan migrasi seluruh tabel database dan seeder bawaan (roles, pengaturan default, dll.):
+   ```bash
+   php artisan migrate --force
+   php artisan db:seed --force
+   ```
+5. Buat symlink direktori storage publik:
+   ```bash
+   php artisan storage:link
+   ```
+6. Buka domain sekolah Anda di browser dan login menggunakan akun Administrator.
 
 ---
 
@@ -282,14 +375,34 @@ Shared hosting memiliki karakteristik lingkungan terbatas (tidak memiliki akses 
    $app = require_once __DIR__.'/../eegyosims/bootstrap/app.php';
    ```
 
----
-
-### B. Setup Database & Wizard
+### B. Setup Database & Konfigurasi .env di cPanel
 
 1. Buka cPanel > **MySQL Database Wizard**.
-2. Buat database baru (misal: `user_eegyosims`) dan user database beserta password.
-3. Berikan permission **ALL PRIVILEGES** pada user tersebut.
-4. Akses domain sekolah Anda di browser, lalu ikuti langkah **Wizard Instalasi** web.
+2. Buat database baru (misal: `user_eegyosims`) dan user database beserta password yang kuat.
+3. Berikan permission **ALL PRIVILEGES** pada user tersebut ke database.
+4. Buka **File Manager** cPanel, edit file `.env` di folder aplikasi Anda (`/home/username/eegyosims/.env`):
+   ```env
+   APP_ENV=production
+   APP_DEBUG=false
+   APP_URL=https://sims.sekolah.sch.id
+
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=user_eegyosims
+   DB_USERNAME=user_dbuser
+   DB_PASSWORD=password_database_anda
+   ```
+5. **Inisialisasi Database:**
+   * **Jika cPanel memiliki akses Terminal:**
+     ```bash
+     cd /home/username/eegyosims
+     php artisan key:generate
+     php artisan migrate --force
+     php artisan db:seed --force
+     ```
+   * **Jika tanpa Terminal:**
+     Import skema tabel dan data awal melalui menu **phpMyAdmin** di cPanel.
 
 ---
 
@@ -495,6 +608,21 @@ Eegyo SIMS telah dilengkapi antarmuka bawaan untuk mengupload kredensial Firebas
 1. Pastikan website diakses menggunakan protokol **HTTPS (SSL)**. Service Worker dan Web Push Notification di browser modern **wajib** menggunakan HTTPS.
 2. Pastikan pengguna telah mengklik tombol **"Izinkan Notifikasi"** pada prompt izin browser.
 3. Pastikan status kredensial Firebase di menu **Admin > Sistem > Firebase** berstatus **Valid / Hijau**.
+
+---
+
+### 5. Pesan Error: *Site error: the ionCube PHP Loader needs to be installed...*
+* **Penyebab:** Ekstensi ionCube PHP Loader belum terpasang atau belum diaktifkan pada konfigurasi PHP-FPM / CLI.
+* **Solusi:**
+  1. **Di VPS (Ubuntu/Debian):**
+     - Pastikan file `ioncube_loader_lin_8.3.so` sudah disalin ke direktori ekstensi PHP (`/usr/lib/php/...`).
+     - Pastikan file `00-ioncube.ini` ada di `/etc/php/8.3/fpm/conf.d/` dan `/etc/php/8.3/cli/conf.d/`.
+     - Restart PHP-FPM: `sudo systemctl restart php8.3-fpm && sudo systemctl reload nginx`.
+  2. **Di Shared Hosting (cPanel):**
+     - Masuk ke cPanel > **Select PHP Version** > Tab **Extensions**.
+     - Beri tanda centang pada opsi **`ioncube_loader`**.
+  3. **Verifikasi Terminal:**
+     - Jalankan `php -v` dan pastikan terdapat baris `with the ionCube PHP Loader v...`.
 
 ---
 
