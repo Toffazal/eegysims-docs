@@ -1,7 +1,7 @@
 # 🛠️ Eegyo SIMS — Technology Stack & Architecture Specifications
 
 <p align="center">
-  <img src="public/assets/image/logo_esims_white.png" alt="Eegyo SIMS Logo" width="220">
+  <img src="logo_esims_white.png" alt="Eegyo SIMS Logo" width="220">
 </p>
 
 <p align="center">
