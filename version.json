@@ -1,8 +1,13 @@
 {
-    "version": "v1.0.0",
-    "last_checked": "2026-10-16 01:00:03",
-    "last_updated": "2026-10-16 01:00:03",
+    "version": "v1.0.1",
+    "last_checked": "2026-10-17 19:05:00",
+    "last_updated": "2026-10-17 19:05:00",
     "history": [
+        {
+            "version": "v1.0.1",
+            "date": "17 Oktober 2026",
+            "description": "Pembaruan integrasi WebSocket Reverb & driver broadcast presensi, otomatisasi fallback default avatar profil pada model User, Pegawai, dan Siswa, serta perbaikan relasi dan model Jenjang/Siswa."
+        },
         {
             "version": "v1.0.0",
             "date": "22 Agustus 2026",

@@ -1,7 +1,7 @@
 # Eegyo SIMS - Enterprise School Information Management System
 
 <p align="center">
-  <img src="logo_esims_white.png" alt="Eegyo SIMS Logo" width="250">
+  <img src="public/assets/image/logo_esims_white.png" alt="Eegyo SIMS Logo" width="250">
 </p>
 
 <p align="center">
